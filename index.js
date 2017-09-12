@@ -1,22 +1,16 @@
 const fs = require('fs');
 
-const attrLookup = {
-	id: /id\s*=\s*['\\"]([^'\"]*?)['\"][^>]/g,
-	class: /class\s*=\s*['\\"]([^'\"]*?)['\"][^>]/g,
-	width: /width\s*=\s*['\\"]([^'\"]*?)['\"][^>]/g,
-	height: /height\s*=\s*['\\"]([^'\"]*?)['\"][^>]/g
-}
-
 var cleanSVG = function(svg) {
-	var width = attrLookup.width.exec(svg)
-	var height = attrLookup.height.exec(svg)
+	var width = /\ width\s*=\s*['\\"]([^'\"]*?)['\"][^>]/g.exec(svg)
+	var height = /\ height\s*=\s*['\\"]([^'\"]*?)['\"][^>]/g.exec(svg)
+	var cleanSVG = svg;
 	if (width && width[0]) {
-		svg = svg.replace(width[0], '');
+		cleanSVG = cleanSVG.replace(width[0], ' ');
 	}
 	if (height && height[0]) {
-		svg = svg.replace(height[0], '');
+		cleanSVG = cleanSVG.replace(height[0], ' ');
 	}
-	return svg;
+	return cleanSVG;
 }
 
 var addAttr = function (attr, value, data) {
@@ -41,32 +35,34 @@ module.exports = function(source) {
 
 	while ((matches = imgTagSrcRegex.exec(source)) !== null) {
 		if (checkExtension(matches[1], '.svg')) {
-			subs.push(new Promise((resolve, reject) => {
-				var img = matches[0];
-				var svgPath = matches[1];
-				var ids = attrLookup.id.exec(img)
-				var classes = attrLookup.class.exec(img)
-				this.resolve(this.context, svgPath, (error, result) => {
-					if (!error) {
-						fs.readFile(result, 'utf8', (error, data) => {
-							if (!error) {
-								if (ids && ids[1]) {
-									data = addAttr('id', ids[1], data)
+			((matches) => {
+				subs.push(new Promise((resolve, reject) => {
+					var img = matches[0];
+					var svgPath = matches[1];
+					var ids = /\ id\s*=\s*['\\"]([^'\"]*?)['\"][^>]/g.exec(img)
+					var classes = /\ class\s*=\s*['\\"]([^'\"]*?)['\"][^>]/g.exec(img)
+					this.resolve(this.context, svgPath, (error, result) => {
+						if (!error) {
+							fs.readFile(result, 'utf8', (error, data) => {
+								if (!error) {
+									if (ids && ids[1]) {
+										data = addAttr('id', ids[1], data)
+									}
+									if (classes && classes[1]) {
+										data = addAttr('class', classes[1], data)
+									}
+									data = cleanSVG(data);
+									resolve([img, data])
+								} else {
+									reject(error)
 								}
-								if (classes && classes[1]) {
-									data = addAttr('class', classes[1], data)
-								}
-								data = cleanSVG(data);
-								resolve([img, data])
-							} else {
-								reject(error)
-							}
-						})
-					} else {
-						reject(error)
-					}
-				})
-			}));
+							})
+						} else {
+							reject(error)
+						}
+					})
+				}));
+			})(matches)
 		}
 	}
 
