@@ -1,0 +1,26 @@
+{
+  "name": "img-to-svg-loader",
+  "version": "0.0.1",
+  "description": "Webpack loader to inline svg images in your markup",
+  "main": "index.js",
+  "scripts": {
+    "test": "npm run test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ingrammicro/img-to-svg-loader.git"
+  },
+  "keywords": [
+    "webpack",
+    "loader",
+    "svg",
+    "inline",
+    "images"
+  ],
+  "author": "Alberto del Valle",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/ingrammicro/img-to-svg-loader/issues"
+  },
+  "homepage": "https://github.com/ingrammicro/img-to-svg-loader#readme"
+}
